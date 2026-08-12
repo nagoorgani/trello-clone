@@ -17,3 +17,7 @@ services:
         sync: false
       - key: CLIENT_URL
         value: "*"
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM
+        value: "Trello Clone <onboarding@resend.dev>"

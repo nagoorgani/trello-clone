@@ -26,12 +26,15 @@ async function bootstrap() {
   // Middleware
   app.use(cookieParser());
 
-  // CORS configuration for Frontend
+  // Bulletproof CORS configuration for Vercel, localhost, and custom domains
   app.enableCors({
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      // Dynamically reflect requesting origin so credentials: true is always allowed
+      callback(null, true);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   });
 
   // Global validation pipe

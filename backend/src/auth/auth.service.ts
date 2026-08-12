@@ -113,6 +113,8 @@ export class AuthService {
       },
     });
 
+    this.mailService.sendWelcomeEmail(user.email, user.name).catch(() => {});
+
     const tokens = await this.generateTokens(user.id, user.email);
     await this.saveRefreshToken(user.id, tokens.refreshToken, userAgent, ipAddress);
 

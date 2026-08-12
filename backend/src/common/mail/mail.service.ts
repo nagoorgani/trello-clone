@@ -33,8 +33,47 @@ export class MailService {
     }
   }
 
-  async sendPasswordResetEmail(to: string, resetCode: string): Promise<boolean> {
+  async sendWelcomeEmail(to: string, name: string): Promise<boolean> {
     const from = process.env.RESEND_FROM || process.env.SMTP_FROM || 'Trello Clone <onboarding@resend.dev>';
+    const subject = `🎉 Welcome to Trello Clone, ${name}!`;
+    const html = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="background: #2563eb; color: #ffffff; width: 48px; height: 48px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; margin-bottom: 12px;">
+            T
+          </div>
+          <h1 style="color: #0f172a; font-size: 24px; font-weight: 800; margin: 0;">Welcome aboard, ${name}! 🚀</h1>
+          <p style="color: #64748b; font-size: 14px; margin-top: 8px;">Your personal agile project management workspace is ready to go.</p>
+        </div>
+
+        <div style="background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px; margin: 24px 0;">
+          <h3 style="color: #1e293b; font-size: 15px; font-weight: 700; margin-top: 0; margin-bottom: 16px;">Quick tips to get started:</h3>
+          <ul style="color: #475569; font-size: 13px; line-height: 1.8; margin: 0; padding-left: 20px;">
+            <li>📋 <strong>Kanban Boards</strong>: Create columns and drag cards with 0ms visual latency.</li>
+            <li>⚡ <strong>Real-Time Collaboration</strong>: Invite team members to see live card moves and presence.</li>
+            <li>🤖 <strong>AI Copilot</strong>: Generate automated subtask checklists with a single click.</li>
+            <li>⌨️ <strong>Command Palette</strong>: Press <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 12px;">Cmd + K</code> or <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 12px;">Ctrl + K</code> anywhere to navigate fast.</li>
+            <li>📊 <strong>Alternate Views</strong>: Switch between Kanban, Monthly Calendar, Table, and Analytics meters.</li>
+          </ul>
+        </div>
+
+        <div style="text-align: center; margin: 32px 0 16px 0;">
+          <a href="${process.env.CLIENT_URL || 'http://localhost:3000'}" style="background: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 700; font-size: 14px; display: inline-block;">
+            Open Your Workspace
+          </a>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 28px 0 20px 0;" />
+        <p style="color: #94a3b8; font-size: 11px; text-align: center; margin: 0;">
+          © ${new Date().getFullYear()} Trello Clone Pro. Built with Next.js 15, NestJS & PostgreSQL.
+        </p>
+      </div>
+    `;
+
+    return this.dispatchEmail(to, subject, html);
+  }
+
+  async sendPasswordResetEmail(to: string, resetCode: string): Promise<boolean> {
     const subject = '🔐 Your Password Reset Code - Trello Clone';
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0;">
@@ -62,6 +101,12 @@ export class MailService {
       </div>
     `;
 
+    return this.dispatchEmail(to, subject, html);
+  }
+
+  private async dispatchEmail(to: string, subject: string, html: string): Promise<boolean> {
+    const from = process.env.RESEND_FROM || process.env.SMTP_FROM || 'Trello Clone <onboarding@resend.dev>';
+
     // 1. Try Resend First
     if (this.resend) {
       try {
@@ -75,7 +120,7 @@ export class MailService {
         if (error) {
           this.logger.error(`❌ Resend API Error: ${JSON.stringify(error)}`);
         } else {
-          this.logger.log(`✅ Password reset email sent via Resend to ${to} (ID: ${data?.id})`);
+          this.logger.log(`✅ Email sent via Resend to ${to} (ID: ${data?.id})`);
           return true;
         }
       } catch (err: any) {
@@ -92,15 +137,15 @@ export class MailService {
           subject,
           html,
         });
-        this.logger.log(`✅ Password reset email sent via SMTP to ${to}`);
+        this.logger.log(`✅ Email sent via SMTP to ${to}`);
         return true;
       } catch (err: any) {
         this.logger.error(`❌ SMTP dispatch failed: ${err.message}`);
       }
     }
 
-    // 3. Fallback log for dev inspection
-    this.logger.log(`\n======================================================\n📨 [EMAIL DISPATCH LOG]\nTo: ${to}\nSubject: ${subject}\nReset Code: ${resetCode}\n======================================================\n`);
+    // 3. Fallback mock log
+    this.logger.log(`\n======================================================\n📨 [EMAIL DISPATCH LOG]\nTo: ${to}\nSubject: ${subject}\n======================================================\n`);
     return true;
   }
 }

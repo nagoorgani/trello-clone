@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Trello, Lock, Mail, ArrowLeft, KeyRound, CheckCircle2 } from 'lucide-react';
+import { Lock, Mail, ArrowLeft, KeyRound, ShieldCheck, MailCheck } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,23 +19,18 @@ export default function ForgotPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleRequestToken = async (e: React.FormEvent) => {
+  const handleRequestCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
     setLoading(true);
     try {
       const res: any = await api.post('/auth/forgot-password', { email: email.trim() });
-      if (res?.resetToken) {
-        setToken(res.resetToken);
-        toast.success('Reset code generated! You can now set your new password.');
-        setStep('reset');
-      } else {
-        toast.success(res?.message || 'If an account exists, a reset link has been dispatched.');
-        setStep('reset');
-      }
+      toast.success(res?.message || 'Verification code sent to your email.');
+      setToken(''); // Ensure token is NOT auto-filled, user must type it
+      setStep('reset');
     } catch (err: any) {
-      toast.error(err.message || 'Failed to request reset token.');
+      toast.error(err.message || 'Failed to request reset code.');
     } finally {
       setLoading(false);
     }
@@ -43,7 +38,10 @@ export default function ForgotPasswordPage() {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token || !newPassword) return;
+    if (!token || !newPassword) {
+      toast.error('Please fill in all fields');
+      return;
+    }
 
     if (newPassword !== confirmPassword) {
       toast.error('Passwords do not match');
@@ -57,14 +55,14 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
     try {
-      await api.post('/auth/reset-password', {
+      const res: any = await api.post('/auth/reset-password', {
         token: token.trim(),
         newPassword,
       });
-      toast.success('Password updated successfully! You can now sign in.');
+      toast.success(res?.message || 'Password updated successfully! You can now sign in.');
       router.push('/login');
     } catch (err: any) {
-      toast.error(err.message || 'Invalid or expired reset token.');
+      toast.error(err.message || 'Invalid or expired verification code.');
     } finally {
       setLoading(false);
     }
@@ -76,20 +74,20 @@ export default function ForgotPasswordPage() {
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
-            <KeyRound className="h-6 w-6" />
+            {step === 'request' ? <KeyRound className="h-6 w-6" /> : <MailCheck className="h-6 w-6" />}
           </div>
           <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-            {step === 'request' ? 'Reset Password' : 'Enter New Password'}
+            {step === 'request' ? 'Forgot Password' : 'Enter Verification Code'}
           </h1>
           <p className="text-xs text-muted-foreground">
             {step === 'request'
-              ? 'Enter your account email to receive your password reset token.'
-              : 'Choose a strong new password for your account.'}
+              ? 'Enter your registered email address to receive a 6-digit reset code.'
+              : `We sent a 6-digit code to ${email}. Check your inbox and enter it below.`}
           </p>
         </div>
 
         {step === 'request' ? (
-          <form onSubmit={handleRequestToken} className="space-y-4">
+          <form onSubmit={handleRequestCode} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground">Email address</label>
               <div className="relative">
@@ -107,18 +105,21 @@ export default function ForgotPasswordPage() {
             </div>
 
             <Button type="submit" disabled={loading} className="w-full h-10 rounded-xl font-bold shadow-md">
-              {loading ? 'Generating Code...' : 'Continue to Reset Password'}
+              {loading ? 'Sending Code...' : 'Send Reset Code'}
             </Button>
           </form>
         ) : (
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground">Reset Verification Token</label>
+              <label className="text-xs font-semibold text-foreground">6-Digit Verification Code</label>
               <Input
-                placeholder="Enter reset token"
+                placeholder="Enter 6-digit code from email"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
+                maxLength={10}
                 required
+                autoFocus
+                className="tracking-widest font-mono text-center text-sm font-bold"
               />
             </div>
 
@@ -155,8 +156,18 @@ export default function ForgotPasswordPage() {
             </div>
 
             <Button type="submit" disabled={loading} className="w-full h-10 rounded-xl font-bold shadow-md">
-              {loading ? 'Updating Password...' : 'Save New Password'}
+              {loading ? 'Resetting Password...' : 'Save New Password'}
             </Button>
+
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={() => setStep('request')}
+                className="text-[11px] font-medium text-primary hover:underline"
+              >
+                Didn't receive code? Resend
+              </button>
+            </div>
           </form>
         )}
 

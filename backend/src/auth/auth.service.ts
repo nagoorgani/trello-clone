@@ -11,6 +11,7 @@ import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto, LoginDto, ForgotPasswordDto, ResetPasswordDto } from './dto/auth.dto';
 import { WorkspaceRole, BoardRole } from '@prisma/client';
+import { MailService } from '../common/mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly mailService: MailService,
   ) {}
 
   async register(dto: RegisterDto, userAgent?: string, ipAddress?: string) {
@@ -200,40 +202,43 @@ export class AuthService {
 
   async forgotPassword(dto: ForgotPasswordDto) {
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email.toLowerCase().trim() },
+      where: { email: dto.email.toLowerCase() },
     });
 
     if (!user) {
-      return { message: 'If the email exists, a password reset link has been dispatched.' };
+      // Return success message to prevent user enumeration
+      return { message: 'If an account with this email exists, a 6-digit reset code has been sent.' };
     }
 
-    const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    const resetTokenExp = new Date(Date.now() + 3600000); // 1 hour
+    // Generate 6-digit numeric reset code
+    const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
+    const resetTokenExp = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes expiration
 
     await this.prisma.user.update({
       where: { id: user.id },
       data: { resetToken, resetTokenExp },
     });
 
-    return {
-      message: 'If the email exists, a password reset link has been dispatched.',
-      resetToken, // Returned in dev for easy verification
-    };
+    // Send email with reset code
+    await this.mailService.sendPasswordResetEmail(user.email, resetToken);
+
+    return { message: 'A 6-digit verification code has been dispatched to your email address.' };
   }
 
   async resetPassword(dto: ResetPasswordDto) {
     const user = await this.prisma.user.findFirst({
       where: {
         resetToken: dto.token,
-        resetTokenExp: { gt: new Date() },
+        resetTokenExp: { gte: new Date() },
       },
     });
 
     if (!user) {
-      throw new BadRequestException('Invalid or expired password reset token');
+      throw new BadRequestException('Invalid or expired reset code');
     }
 
     const passwordHash = await bcrypt.hash(dto.newPassword, 10);
+
     await this.prisma.user.update({
       where: { id: user.id },
       data: {
@@ -243,7 +248,12 @@ export class AuthService {
       },
     });
 
-    return { message: 'Password has been successfully updated. You can now login.' };
+    // Revoke all existing refresh tokens on password change
+    await this.prisma.refreshToken.deleteMany({
+      where: { userId: user.id },
+    });
+
+    return { message: 'Password has been successfully updated. You can now log in.' };
   }
 
   private async generateTokens(userId: string, email: string) {

@@ -15,11 +15,16 @@ import { ActivitiesModule } from './activities/activities.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { AiModule } from './ai/ai.module';
+import { MailModule } from './common/mail/mail.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     PrismaModule,
+    MailModule,
     AuthModule,
     UsersModule,
     WorkspacesModule,

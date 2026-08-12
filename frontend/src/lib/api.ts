@@ -7,8 +7,10 @@ if (!rawApiUrl.endsWith('/api')) {
   rawApiUrl = `${rawApiUrl}/api`;
 }
 
+export const API_BASE_URL = rawApiUrl;
+
 export const api = axios.create({
-  baseURL: rawApiUrl,
+  baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

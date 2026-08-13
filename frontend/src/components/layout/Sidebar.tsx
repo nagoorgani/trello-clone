@@ -26,7 +26,7 @@ export function Sidebar() {
   const params = useParams();
   const currentBoardId = params?.id as string;
   const { user } = useAuthStore();
-  const { isSidebarCollapsed, setCreateBoardOpen } = useUIStore();
+  const { isSidebarCollapsed, setCreateBoardOpen, toggleSidebar } = useUIStore();
 
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [expandedWorkspaces, setExpandedWorkspaces] = useState<Record<string, boolean>>({});
@@ -66,23 +66,36 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="relative flex h-[calc(100vh-3.5rem)] w-64 flex-col border-r border-border/50 bg-background/50 backdrop-blur-md">
-      <div className="flex-1 overflow-y-auto p-3 space-y-6 kanban-scrollbar">
-        {/* Quick Navigation links */}
-        <div className="space-y-1">
-          <Link
-            href="/"
-            className={cn(
-              "flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors",
-              pathname === '/'
-                ? "bg-primary/10 text-primary font-semibold"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground"
-            )}
-          >
-            <Compass className="h-4 w-4" />
-            <span>Overview & Dashboard</span>
-          </Link>
-        </div>
+    <>
+      {/* Mobile Backdrop Overlay */}
+      <div
+        onClick={() => toggleSidebar()}
+        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs md:hidden animate-in fade-in duration-200"
+      />
+
+      {/* Sidebar Panel */}
+      <aside className="fixed inset-y-0 left-0 z-50 flex h-full w-72 flex-col border-r border-border/60 bg-background/95 p-0 backdrop-blur-xl shadow-2xl md:static md:z-30 md:h-[calc(100vh-3.5rem)] md:w-64 md:bg-background/50 md:shadow-none transition-all duration-200">
+        <div className="flex-1 overflow-y-auto p-3 space-y-6 kanban-scrollbar">
+          {/* Quick Navigation links */}
+          <div className="space-y-1">
+            <Link
+              href="/"
+              onClick={() => {
+                if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                  toggleSidebar();
+                }
+              }}
+              className={cn(
+                "flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors",
+                pathname === '/'
+                  ? "bg-primary/10 text-primary font-semibold"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+              )}
+            >
+              <Compass className="h-4 w-4" />
+              <span>Overview & Dashboard</span>
+            </Link>
+          </div>
 
         {/* Starred Boards Section */}
         {starredBoards.length > 0 && (
@@ -98,6 +111,11 @@ export function Sidebar() {
                 <Link
                   key={b.id}
                   href={`/boards/${b.id}`}
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                      toggleSidebar();
+                    }
+                  }}
                   className={cn(
                     "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors",
                     currentBoardId === b.id
@@ -160,6 +178,11 @@ export function Sidebar() {
                         <Link
                           key={board.id}
                           href={`/boards/${board.id}`}
+                          onClick={() => {
+                            if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                              toggleSidebar();
+                            }
+                          }}
                           className={cn(
                             "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-colors",
                             currentBoardId === board.id
@@ -199,5 +222,6 @@ export function Sidebar() {
         </div>
       </div>
     </aside>
+    </>
   );
 }

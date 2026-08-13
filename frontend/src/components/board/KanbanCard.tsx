@@ -44,11 +44,12 @@ export function KanbanCard({ card, index }: KanbanCardProps) {
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
+          style={provided.draggableProps.style}
           onClick={() => setActiveCardId(card.id)}
           className={cn(
-            "group relative mb-2 flex cursor-pointer flex-col rounded-xl border border-border/60 bg-card p-3 shadow-sm transition-all duration-150 hover:border-primary/50 hover:shadow-md",
+            "group relative mb-2 flex cursor-pointer flex-col rounded-xl border border-border/60 bg-card p-3 shadow-sm select-none hover:border-primary/50 hover:shadow-md",
             snapshot.isDragging &&
-              "rotate-1 scale-105 border-primary shadow-2xl ring-2 ring-primary/40 z-50",
+              "border-primary shadow-2xl ring-2 ring-primary/40 z-50 bg-card/95 opacity-95",
             card.isCompleted && "opacity-75"
           )}
         >

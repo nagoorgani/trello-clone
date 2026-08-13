@@ -117,14 +117,14 @@ export function KanbanBoard() {
   };
 
   return (
-    <div className="relative flex flex-1 overflow-x-auto p-4 kanban-scrollbar">
+    <div className="relative flex flex-1 overflow-x-auto p-3 sm:p-4 kanban-scrollbar touch-pan-x select-none">
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="all-lists" direction="horizontal" type="LIST">
           {(provided) => (
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className="flex items-start gap-4"
+              className="flex items-start gap-3 sm:gap-4"
             >
               {board.lists?.map((list, index) => (
                 <KanbanList key={list.id} list={list} index={index} />
@@ -132,11 +132,11 @@ export function KanbanBoard() {
               {provided.placeholder}
 
               {/* Add Another List Button / Form */}
-              <div className="w-72 shrink-0">
+              <div className="w-[82vw] sm:w-72 shrink-0">
                 {isAddingList ? (
                   <form
                     onSubmit={handleAddListSubmit}
-                    className="rounded-2xl border border-border/40 bg-board-list/90 p-3 shadow-md backdrop-blur-md"
+                    className="rounded-2xl border border-border/50 bg-board-list p-3 shadow-md"
                   >
                     <input
                       type="text"

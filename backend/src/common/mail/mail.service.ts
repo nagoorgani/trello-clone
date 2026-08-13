@@ -2,6 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Resend } from 'resend';
 import * as nodemailer from 'nodemailer';
 
+export interface EmailResult {
+  success: boolean;
+  id?: string;
+  error?: string;
+}
+
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
@@ -14,7 +20,7 @@ export class MailService {
       this.resend = new Resend(resendApiKey);
       this.logger.log('📧 Resend Email Service initialized successfully.');
     } else {
-      this.logger.warn('⚠️ RESEND_API_KEY not configured. Falling back to SMTP/mock.');
+      this.logger.warn('⚠️ RESEND_API_KEY not configured.');
     }
 
     const host = process.env.SMTP_HOST;
@@ -33,8 +39,7 @@ export class MailService {
     }
   }
 
-  async sendWelcomeEmail(to: string, name: string): Promise<boolean> {
-    const from = process.env.RESEND_FROM || process.env.SMTP_FROM || 'Trello Clone <onboarding@resend.dev>';
+  async sendWelcomeEmail(to: string, name: string): Promise<EmailResult> {
     const subject = `🎉 Welcome to Trello Clone, ${name}!`;
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0;">
@@ -73,7 +78,7 @@ export class MailService {
     return this.dispatchEmail(to, subject, html);
   }
 
-  async sendPasswordResetEmail(to: string, resetCode: string): Promise<boolean> {
+  async sendPasswordResetEmail(to: string, resetCode: string): Promise<EmailResult> {
     const subject = '🔐 Your Password Reset Code - Trello Clone';
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0;">
@@ -104,10 +109,10 @@ export class MailService {
     return this.dispatchEmail(to, subject, html);
   }
 
-  private async dispatchEmail(to: string, subject: string, html: string): Promise<boolean> {
+  private async dispatchEmail(to: string, subject: string, html: string): Promise<EmailResult> {
     const from = process.env.RESEND_FROM || process.env.SMTP_FROM || 'Trello Clone <onboarding@resend.dev>';
 
-    // 1. Try Resend First
+    // 1. Try Resend
     if (this.resend) {
       try {
         const { data, error } = await this.resend.emails.send({
@@ -118,34 +123,38 @@ export class MailService {
         });
 
         if (error) {
-          this.logger.error(`❌ Resend API Error: ${JSON.stringify(error)}`);
+          const errMsg = (error as any).message || JSON.stringify(error);
+          this.logger.error(`❌ Resend API Error: ${errMsg}`);
+          return { success: false, error: errMsg };
         } else {
-          this.logger.log(`✅ Email sent via Resend to ${to} (ID: ${data?.id})`);
-          return true;
+          this.logger.log(`✅ Email dispatched successfully via Resend to ${to} (ID: ${data?.id})`);
+          return { success: true, id: data?.id };
         }
       } catch (err: any) {
-        this.logger.error(`❌ Resend dispatch failed: ${err.message}`);
+        this.logger.error(`❌ Resend dispatch exception: ${err.message}`);
+        return { success: false, error: err.message };
       }
     }
 
     // 2. Try SMTP Fallback
     if (this.transporter) {
       try {
-        await this.transporter.sendMail({
+        const info = await this.transporter.sendMail({
           from,
           to,
           subject,
           html,
         });
         this.logger.log(`✅ Email sent via SMTP to ${to}`);
-        return true;
+        return { success: true, id: info.messageId };
       } catch (err: any) {
         this.logger.error(`❌ SMTP dispatch failed: ${err.message}`);
+        return { success: false, error: err.message };
       }
     }
 
     // 3. Fallback mock log
     this.logger.log(`\n======================================================\n📨 [EMAIL DISPATCH LOG]\nTo: ${to}\nSubject: ${subject}\n======================================================\n`);
-    return true;
+    return { success: true };
   }
 }

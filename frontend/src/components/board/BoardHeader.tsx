@@ -66,13 +66,13 @@ export function BoardHeader() {
   ];
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-black/30 px-4 py-2.5 backdrop-blur-md text-white">
+    <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 border-b border-white/10 bg-black/30 px-3 sm:px-4 py-2 sm:py-2.5 backdrop-blur-md text-white">
       {/* Left: Board Title, Star, Privacy */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2 max-w-full">
         {isEditingTitle ? (
           <input
             type="text"
-            className="h-8 rounded-lg bg-white/20 px-2.5 text-base font-bold text-white outline-none focus:ring-2 focus:ring-primary"
+            className="h-8 rounded-lg bg-white/20 px-2 text-sm sm:text-base font-bold text-white outline-none focus:ring-2 focus:ring-primary max-w-[180px] sm:max-w-none"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onBlur={handleTitleSubmit}
@@ -85,7 +85,7 @@ export function BoardHeader() {
               setTitle(board.title);
               setIsEditingTitle(true);
             }}
-            className="rounded-lg px-2 py-1 text-base font-bold text-white transition-colors hover:bg-white/10"
+            className="rounded-lg px-2 py-1 text-sm sm:text-base font-bold text-white transition-colors hover:bg-white/10 truncate max-w-[180px] sm:max-w-none text-left"
           >
             {board.title}
           </button>
@@ -94,7 +94,7 @@ export function BoardHeader() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 text-white/80 hover:bg-white/10 hover:text-white"
+          className="h-7 w-7 text-white/80 hover:bg-white/10 hover:text-white shrink-0"
           onClick={handleToggleStar}
         >
           <Star
@@ -105,7 +105,7 @@ export function BoardHeader() {
           />
         </Button>
 
-        <span className="flex items-center gap-1 rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-medium text-white/80">
+        <span className="hidden xs:flex items-center gap-1 rounded-md bg-white/10 px-2 py-0.5 text-[11px] font-medium text-white/80 shrink-0">
           {board.isPublic ? (
             <>
               <Globe className="h-3 w-3" /> Public
@@ -119,7 +119,7 @@ export function BoardHeader() {
       </div>
 
       {/* Center: View Switcher (Kanban, Calendar, Table, Analytics) */}
-      <div className="flex items-center rounded-lg bg-black/40 p-0.5 border border-white/10">
+      <div className="flex items-center rounded-lg bg-black/40 p-0.5 border border-white/10 shrink-0">
         {views.map((v) => {
           const Icon = v.icon;
           const isActive = activeView === v.id;
@@ -128,7 +128,7 @@ export function BoardHeader() {
               key={v.id}
               onClick={() => setActiveView(v.id)}
               className={cn(
-                "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all",
+                "flex items-center gap-1.5 rounded-md px-2 sm:px-2.5 py-1 text-xs font-medium transition-all",
                 isActive
                   ? "bg-white/20 text-white shadow-sm font-semibold"
                   : "text-white/70 hover:text-white hover:bg-white/10"

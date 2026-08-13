@@ -89,9 +89,10 @@ export function KanbanList({ list, index }: KanbanListProps) {
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
+          style={provided.draggableProps.style}
           className={cn(
-            "flex max-h-[calc(100vh-8rem)] w-72 shrink-0 flex-col rounded-2xl border border-border/40 bg-board-list/90 p-3 shadow-sm backdrop-blur-md transition-all duration-150",
-            snapshot.isDragging && "rotate-2 shadow-2xl ring-2 ring-primary/50"
+            "flex max-h-[calc(100vh-7rem)] sm:max-h-[calc(100vh-8rem)] w-[82vw] sm:w-72 shrink-0 flex-col rounded-2xl border border-border/50 bg-board-list p-3 shadow-md select-none",
+            snapshot.isDragging && "shadow-2xl ring-2 ring-primary/50 opacity-95 z-40"
           )}
         >
           {/* List Header */}

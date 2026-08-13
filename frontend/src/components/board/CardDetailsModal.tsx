@@ -308,16 +308,16 @@ export function CardDetailsModal() {
 
   return (
     <Dialog open={Boolean(activeCardId)} onOpenChange={(open) => !open && setActiveCardId(null)}>
-      <DialogContent className="max-w-3xl p-0 overflow-hidden">
+      <DialogContent className="max-w-3xl w-[96vw] md:w-full p-0 overflow-hidden max-h-[92vh] flex flex-col rounded-2xl sm:rounded-3xl">
         {/* Cover Header Bar */}
         {card?.coverColor && (
           <div
-            className="h-24 w-full transition-all duration-300 relative"
+            className="h-20 sm:h-24 w-full transition-all duration-300 relative shrink-0"
             style={{ backgroundColor: card.coverColor }}
           >
             <button
               onClick={() => handleSetCoverColor(null)}
-              className="absolute right-12 top-4 rounded-full bg-black/40 p-1.5 text-white/80 hover:text-white"
+              className="absolute right-12 top-3 sm:top-4 rounded-full bg-black/40 p-1.5 text-white/80 hover:text-white"
               title="Remove Cover"
             >
               <X className="h-4 w-4" />
@@ -325,7 +325,7 @@ export function CardDetailsModal() {
           </div>
         )}
 
-        <div className="p-6 max-h-[80vh] overflow-y-auto kanban-scrollbar space-y-6">
+        <div className="p-4 sm:p-6 overflow-y-auto kanban-scrollbar space-y-5 sm:space-y-6 flex-1">
           {/* Card Title & List Breadcrumb */}
           <div className="space-y-1">
             <div className="flex items-center gap-2">

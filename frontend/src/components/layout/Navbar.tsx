@@ -97,39 +97,40 @@ export function Navbar() {
       </div>
 
       {/* Center section: Global Search & Cmd+K Trigger */}
-      <div className="flex max-w-md flex-1 items-center px-4">
+      <div className="flex max-w-md flex-1 items-center px-2 sm:px-4">
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="flex h-8 w-full items-center justify-between rounded-lg border border-input bg-muted/40 px-3 text-xs text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground"
+          className="flex h-8 w-full items-center justify-between rounded-lg border border-input bg-muted/40 px-2.5 sm:px-3 text-xs text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground"
         >
-          <div className="flex items-center gap-2">
-            <Search className="h-3.5 w-3.5" />
-            <span>Search cards, boards, or actions...</span>
+          <div className="flex items-center gap-2 truncate">
+            <Search className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate hidden sm:inline">Search cards, boards, or actions...</span>
+            <span className="truncate sm:hidden">Search...</span>
           </div>
-          <kbd className="pointer-events-none hidden rounded border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:inline-block">
+          <kbd className="pointer-events-none hidden rounded border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground md:inline-block">
             ⌘K
           </kbd>
         </button>
       </div>
 
       {/* Right section: AI Trigger, New Board, Notifications, Theme, User Menu */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         {/* AI Assistant Button */}
         <Button
           variant="outline"
           size="sm"
           onClick={() => setAiModalOpen(true)}
-          className="relative hidden gap-1.5 border-primary/30 bg-primary/5 text-xs text-primary hover:bg-primary/10 sm:flex"
+          className="h-8 gap-1.5 border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary font-semibold text-xs px-2 sm:px-3"
         >
-          <Sparkles className="h-3.5 w-3.5 fill-primary/30" />
-          <span>AI Copilot</span>
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          <span className="hidden sm:inline">AI Copilot</span>
         </Button>
 
-        {/* Quick Create Board Button */}
+        {/* Create Board Button */}
         <Button
           size="sm"
           onClick={() => setCreateBoardOpen(true)}
-          className="h-8 gap-1 rounded-lg px-2.5 text-xs font-semibold"
+          className="h-8 gap-1 text-xs font-semibold px-2 sm:px-3"
         >
           <Plus className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">Create</span>

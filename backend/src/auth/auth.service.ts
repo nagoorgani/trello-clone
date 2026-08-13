@@ -222,7 +222,20 @@ export class AuthService {
     });
 
     // Send email with reset code
-    await this.mailService.sendPasswordResetEmail(user.email, resetToken);
+    const mailResult = await this.mailService.sendPasswordResetEmail(user.email, resetToken);
+
+    if (!mailResult.success && mailResult.error) {
+      if (mailResult.error.includes('testing emails')) {
+        return {
+          message: `Resend Sandbox Mode: Verification code is ${resetToken} (Resend sandbox requires custom domain to email unverified addresses).`,
+          devCode: resetToken,
+        };
+      }
+      return {
+        message: `Notice: Email delivery encountered an issue (${mailResult.error}). Reset code: ${resetToken}`,
+        devCode: resetToken,
+      };
+    }
 
     return { message: 'A 6-digit verification code has been dispatched to your email address.' };
   }
